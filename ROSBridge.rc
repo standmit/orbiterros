@@ -1,0 +1,158 @@
+/*
+ * Copyright (C) 2020, Andrey Stepanov
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file
+ * \author Andrey Stepanov
+ * \copyright GNU General Public License v3.0
+ */
+
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.K.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENG)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_UK
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ROSBRIDGE_DIALOG DIALOGEX 0, 0, 186, 135
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "ROS Bridge"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Close",IDCANCEL,129,84,50,14
+    CTEXT           "",IDC_ROSBRIDGE_TIME,7,28,172,22,SS_CENTERIMAGE | SS_SUNKEN
+	// TODO ROS
+	CTEXT           "123.123.123.123:11311 123.123.123.123",IDC_ROSBRIDGE_IP,7,60,172,22,SS_CENTERIMAGE | SS_SUNKEN
+END
+
+IDD_PARAMS_DIALOG DIALOG 0, 0, 186, 90
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ROS Bridge parameters"
+FONT 8, "MS SansSerif"
+BEGIN
+	DEFPUSHBUTTON	"OK",IDOK,77,69,50,14
+	PUSHBUTTON		"Cancel",IDCANCEL,129,69,50,14
+	LTEXT			"ROS Master IP:",IDC_STATIC,10,10,60,14
+	EDITTEXT		IDC_PARAMS_MASTER_IP,70,8,50,14
+	LTEXT			"ROS Master port:" IDC_STATIC,10,29,60,14
+	EDITTEXT		IDC_PARAMS_MASTER_PORT,70,27,50,14
+	LTEXT			"ROS IP:",IDC_STATIC,10,48,60,14
+	EDITTEXT		IDC_PARAMS_ROS_IP,70,46,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ROSBRIDGE_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 98
+    END
+
+	IDD_PARAMS_DIALOG, DIALOG
+	BEGIN
+		LEFTMARGIN, 7
+		RIGHTMARGIN, 179
+		TOPMARGIN, 7
+		BOTTOMMARGIN, 83
+	END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_ROSBRIDGE_INFO              "ROS Bridge:\r\n\r\nA module for interaction with Robotic Operation System."
+    IDS_ROSBRIDGE_TYPE              "Developer resources and samples"
+
+	IDS_PARAMS_INFO					"ROS Bridge parameters"
+	IDS_PARAMS_TYPE					"ROS Bridge parameters"
+END
+
+#endif    // English (U.K.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
