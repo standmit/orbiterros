@@ -1,0 +1,11 @@
+<launch>
+    <group ns="orbiter">
+        <node name="rosserial" pkg="rosserial_python" type="serial_node.py" output="screen" required="true">
+            <param name="port" value="tcp" />
+        </node>
+
+        <env name="ROSCONSOLE_CONFIG_FILE" value="$(find orbiterros)/debug.config" />
+
+        <node name="static_transform_publisher" pkg="orbiterros" type="static_transform_publisher" respawn="true" output="screen"/>
+    </group>
+</launch>
