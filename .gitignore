@@ -3,3 +3,7 @@ Release/
 ROSBridge.vcproj.*.*.user
 *.suo
 *.ncb
+.vs/
+Backup*/
+ROSBridge.vcxproj.user
+UpgradeLog*.htm

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ExtraMenu.cpp" />
+    <ClCompile Include="module.cpp" />
+    <ClCompile Include="params.cpp" />
+    <ClCompile Include="ROSBridge.cpp" />
+    <ClCompile Include="ros_lib\duration.cpp">
+      <Filter>ros_lib</Filter>
+    </ClCompile>
+    <ClCompile Include="ros_lib\time.cpp">
+      <Filter>ros_lib</Filter>
+    </ClCompile>
+    <ClCompile Include="ros_lib\WindowsSocket.cpp">
+      <Filter>ros_lib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ExtraMenu.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="ROSBridge.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ROSBridge.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ros_lib">
+      <UniqueIdentifier>{ea1a1726-5fd6-4857-a37f-8b7ccf9117af}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

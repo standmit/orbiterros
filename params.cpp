@@ -20,10 +20,10 @@
  * \copyright GNU General Public License v3.0
  */
 
+#include <string>
+
 namespace ros_bridge {
 
-char rosmaster_ip[16] = "127.0.0.1";	///< IP adress of ROS Master
-char rosmaster_port[6] = "11311";		///< port of ROS Master
-char ros_ip[16] = "127.0.0.1";			///< IP address of client
+std::string rosmaster_ip("127.0.0.1:11411");	///< IP[:port] of ROS Master (means rosserial server side)
 
 }

@@ -33,43 +33,6 @@
 ros_bridge::ROSBridge* ros_bridge_ptr;
 ros_bridge::ExtraMenuItem* extra_menu_item_ptr;
 
-/**
- * \brief Windows message handler for the dialog box
- */
-BOOL CALLBACK MsgProc (HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg) {
-		case WM_INITDIALOG:
-			return TRUE;
-
-		case WM_DESTROY:
-			return TRUE;
-
-		case WM_COMMAND:
-			if (LOWORD(wParam) == IDCANCEL) {
-				ros_bridge_ptr->detachDlg();
-				oapiCloseDialog(hDlg);
-				return TRUE;
-			}
-			break;
-	}
-	return oapiDefDialogProc (hDlg, uMsg, wParam, lParam);
-}
-
-/**
- * \brief Open the dialog window
- */
-void OpenDlgClbk (void *context)
-{
-	const HWND window_id = oapiOpenDialog(ros_bridge_ptr->GetModule(), IDD_ROSBRIDGE_DIALOG, MsgProc);
-	ros_bridge_ptr->attachDlg(window_id);
-}
-
-// ==============================================================
-// API interface
-// ==============================================================
-
-DWORD menu_command_id;	///< Id of command in command list (Ctrl+F4)
 
 /**
  * \brief Initialization of module
@@ -79,22 +42,10 @@ DWORD menu_command_id;	///< Id of command in command list (Ctrl+F4)
  */
 DLLCLBK void InitModule (HINSTANCE hModule)
 {
-	/* TODO ROS
-	char[1] argv = "";
-	ros::init(0, &argv, "orbiter");
-	*/
-
 	ros_bridge_ptr = new ros_bridge::ROSBridge(hModule);
 
 	extra_menu_item_ptr = new ros_bridge::ExtraMenuItem(hModule);
 	oapiRegisterLaunchpadItem(extra_menu_item_ptr);
-
-	// To allow the user to open our new dialog box, we create
-	// an entry in the "Custom Functions" list which is accessed
-	// in Orbiter via Ctrl-F4.
-	menu_command_id = oapiRegisterCustomCmd("ROS Bridge",
-		"Interaction with Robotic Operation System.",
-		OpenDlgClbk, NULL);
 
 	oapiRegisterModule(ros_bridge_ptr);
 }
@@ -109,8 +60,4 @@ DLLCLBK void ExitModule (HINSTANCE hDLL)
 {
 	oapiUnregisterLaunchpadItem(extra_menu_item_ptr);
 	delete extra_menu_item_ptr;
-
-	// Unregister the custom function in Orbiter
-	oapiUnregisterCustomCmd(menu_command_id);
-	delete ros_bridge_ptr;
 }

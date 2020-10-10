@@ -24,10 +24,28 @@
 
 #include "orbitersdk.h"
 #include <windows.h>
-/* TODO ROS
-#include <ros/ros.h>
-#include <std_msgs/Time.h>
-*/
+
+//////////////////////////////////////
+// Avoiding build error
+#ifdef ERROR
+#ifdef ERROR_BACKUP
+#error Cant backup error def
+#endif
+#define ERROR_BACKUP ERROR
+#undef ERROR
+#endif
+
+#include "ros.h"
+
+#ifdef ERROR_BACKUP
+#define ERROR ERROR_BACKUP
+#undef ERROR_BACKUP
+#endif
+//////////////////////////////////////
+
+
+#include "rosgraph_msgs/Clock.h"
+
 
 namespace ros_bridge {
 
@@ -43,25 +61,16 @@ class ROSBridge : public oapi::Module {
 		ROSBridge(const HINSTANCE& hDLL);
 
 		/**
-		 * \brief	Set Dialog to print time on
-		 */
-		void attachDlg(const HWND& hDlg);
-
-		/**
-		 * \brief	Unset Dialog to print time on
-		 * \detail	Call it when dialog is closed
-		 */
-		void detachDlg();
-
-		/**
 		 * \brief	Callback on simulation step
 		 */
-		void clbkPostStep(double simt, double simdt, double mjd) override;
+		void clbkPostStep(double, double, double mjd) override;
+
+		/**
+		 * \brief	Callback on simulation start
+		 */
+		void clbkSimulationStart(RenderMode) override;
 
 	protected:
-		HWND captionId;			///< Where to print time
-
-		double last_simt;		///< When time was printed last time
 
 		double getUTC() const;	///< Get simulated time in unix format
 
@@ -71,16 +80,10 @@ class ROSBridge : public oapi::Module {
 		 */
 		double getUTC(const double& mjd) const;
 
-		/**
-		 * \brief	Print current time on window caption (if available)
-		 */
-		void updateTimeCaption(const double& utc) const;
-
-		/* TODO ROS
 		ros::NodeHandle nh;			///< NodeHandle for ROS
 
-		ros::Publisher clock_pub;	///< Publisher for clock message
-		*/
+		rosgraph_msgs::Clock clock_msg;		///< Clock message
+		ros::Publisher clock_pub;			///< Publisher for clock message
 };
 
 

@@ -22,26 +22,23 @@
 
 #include "ExtraMenu.h"
 #include "resource.h"
+#include <string>
 
 namespace ros_bridge {
 
-const char cfg_filename[] = "ROSBridge.cfg";
-char cfg_rosmaster_ip[] = "ROS_MASTER_IP";
-char cfg_rosmaster_port[] = "ROS_MASTER_PORT";
-char cfg_ros_ip[] = "ROS_IP";
+const std::string cfg_filename("ROSBridge.cfg");
+const std::string cfg_rosmaster_ip("ROS_MASTER_IP");
 
-extern char rosmaster_ip[16];
-extern char rosmaster_port[6];
-extern char ros_ip[16];
+extern std::string rosmaster_ip;
 
 ExtraMenuItem::ExtraMenuItem(const HINSTANCE& hDLL):
 		LaunchpadItem(),
 		hModule(hDLL)
 {
-	FILEHANDLE hFile = oapiOpenFile(cfg_filename, FILE_IN, CONFIG);
-	oapiReadItem_string(hFile, cfg_rosmaster_ip, rosmaster_ip);
-	oapiReadItem_string(hFile, cfg_rosmaster_port, rosmaster_port);
-	oapiReadItem_string(hFile, cfg_ros_ip, ros_ip);
+	FILEHANDLE hFile = oapiOpenFile(cfg_filename.c_str(), FILE_IN, CONFIG);
+	char strbuf[255];
+	oapiReadItem_string(hFile, const_cast<char*>(cfg_rosmaster_ip.c_str()), strbuf);
+	rosmaster_ip = strbuf;
 	oapiCloseFile(hFile, FILE_IN);
 }
 
@@ -56,17 +53,15 @@ char* ExtraMenuItem::Description() {
 BOOL CALLBACK ParamDlgProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
 		case WM_INITDIALOG:
-			SetWindowText(GetDlgItem(hDlg, IDC_PARAMS_MASTER_IP),  rosmaster_ip);
-			SetWindowText(GetDlgItem(hDlg, IDC_PARAMS_MASTER_PORT), rosmaster_port);
-			SetWindowText(GetDlgItem(hDlg, IDC_PARAMS_ROS_IP), ros_ip);
+			SetWindowText(GetDlgItem(hDlg, IDC_PARAMS_MASTER_IP),  rosmaster_ip.c_str());
 			return true;
 
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDOK:
-					GetWindowText(GetDlgItem(hDlg, IDC_PARAMS_MASTER_IP), rosmaster_ip, 16);
-					GetWindowText(GetDlgItem(hDlg, IDC_PARAMS_MASTER_PORT), rosmaster_port, 6);
-					GetWindowText(GetDlgItem(hDlg, IDC_PARAMS_ROS_IP), ros_ip, 16);
+					char  strbuf[255];
+					GetWindowText(GetDlgItem(hDlg, IDC_PARAMS_MASTER_IP), strbuf, 22);
+					rosmaster_ip = strbuf;
 					EndDialog(hDlg, 0);
 					return true;
 
@@ -92,10 +87,8 @@ bool ExtraMenuItem::clbkOpen(HWND hLaunchpad) {
 }
 
 int ExtraMenuItem::clbkWriteConfig() {
-	FILEHANDLE hFile = oapiOpenFile(cfg_filename, FILE_OUT, CONFIG);
-	oapiWriteItem_string(hFile, cfg_rosmaster_ip, rosmaster_ip);
-	oapiWriteItem_string(hFile, cfg_rosmaster_port, rosmaster_port);
-	oapiWriteItem_string(hFile, cfg_ros_ip, ros_ip);
+	FILEHANDLE hFile = oapiOpenFile(cfg_filename.c_str(), FILE_OUT, CONFIG);
+	oapiWriteItem_string(hFile, const_cast<char*>(cfg_rosmaster_ip.c_str()), const_cast<char*>(rosmaster_ip.c_str()));
 	oapiCloseFile(hFile, FILE_OUT);
 	return 0;
 }

@@ -20,20 +20,14 @@
  * \copyright GNU General Public License v3.0
  */
 
-#define IDD_ROSBRIDGE_DIALOG            101
-#define IDD_PARAMS_DIALOG				102
+#define IDD_PARAMS_DIALOG				101
 
 #define IDS_ROSBRIDGE_INFO              1000
 #define IDS_ROSBRIDGE_TYPE              1001
 #define IDS_PARAMS_INFO					1002
 #define IDS_PARAMS_TYPE					1003
 
-#define IDC_ROSBRIDGE_TIME              1001
-#define IDC_ROSBRIDGE_IP				1002
-
 #define IDC_PARAMS_MASTER_IP			1000
-#define IDC_PARAMS_MASTER_PORT			1001
-#define IDC_PARAMS_ROS_IP				1002
 
 // Next default values for new objects
 // 
