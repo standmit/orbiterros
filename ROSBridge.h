@@ -46,6 +46,7 @@
 
 #include "rosgraph_msgs/Clock.h"
 #include "tf2_msgs/TFMessage.h"
+#include "std_srvs/Empty.h"
 #include <vector>
 
 
@@ -84,22 +85,25 @@ class ROSBridge : public oapi::Module {
 
 		/**
 		 * \brief	NodeHandle for ROS
-		 * \details
-		 * Count of subscribers can't be less than 1.
-		 * Two publishers: '/clock' and '/tf'
-		 * Input buffer size: Topics request (8 bytes) + Time message (16 bytes) = 24 bytes.
-		 * Output buffer size: Topics count response (12 bytes) + Clock topic info (79 bytes) + TF topic info (75 bytes) + Clock message (16 bytes) + Time message(16 bytes) + TF message(4814 bytes for all Solar system's objects and 20 ships nemed by 5 chars names (SH-01)) = 5012 bytes
+		 * \details.
+		 * Input buffer size: Topics request (8 bytes) + Time message (16 bytes) + send_static_tf request (15 bytes) = 39 bytes.
+		 * Output buffer size: Topics count response (12 bytes) + Clock topic info (79 bytes) + TF topic info (75 bytes) + Static TF topic info (77 bytes) + Clock message (16 bytes) + Time message(16 bytes) + TF message(8589 bytes for all Solar system's objects, bases and 20 ships nemed by 15 chars names) + send_static_tf service info (88 bytes) + send_static_tf response (20 bytes) = 8897 bytes
 		 */
-		ros::NodeHandle_<WindowsSocket, 1, 2, 24, 5012> nh;
+		ros::NodeHandle_<WindowsSocket, 2, 4, 539, 9500> nh;
 
 		rosgraph_msgs::Clock clock_msg;		///< Clock message
 		ros::Publisher clock_pub;			///< Publisher for clock message
 
-		tf2_msgs::TFMessage tf2_msg;								///< TF2 message
-		ros::Publisher tf2_pub;										///< Publisher for TF2
-		std::vector<geometry_msgs::TransformStamped> transforms;	///< Container for transforms
+		tf2_msgs::TFMessage tf2_msg;										///< TF2 message
+		ros::Publisher tf2_pub;												///< Publisher for TF2
+		ros::Publisher static_tf2_pub;										///< Publisher for Static TF2
+		std::vector<geometry_msgs::TransformStamped> transforms;			///< Container for transforms
+		std::vector<geometry_msgs::TransformStamped> static_transforms;		///< Container for static transforms
 		std::vector<OBJHANDLE> objects;
 		void publishTF2();
+		inline void publishStaticTF2();
+		ros::ServiceServer<std_srvs::Empty::Request, std_srvs::Empty::Response, ROSBridge> send_statc_tf_service;
+		void send_static_tf_cb(const std_srvs::Empty::Request&, std_srvs::Empty::Response&);
 };
 
 
