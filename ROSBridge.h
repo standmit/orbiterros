@@ -48,6 +48,7 @@
 #include "tf2_msgs/TFMessage.h"
 #include "std_srvs/Empty.h"
 #include <vector>
+#include <unordered_map>
 
 
 namespace ros_bridge {
@@ -83,6 +84,8 @@ class ROSBridge : public oapi::Module {
 		 */
 		double getUTC(const double& mjd) const;
 
+		std::string& getObjectName(const OBJHANDLE& hObj);
+		
 		/**
 		 * \brief	NodeHandle for ROS
 		 */
@@ -97,12 +100,12 @@ class ROSBridge : public oapi::Module {
 		std::vector<geometry_msgs::TransformStamped> transforms;			///< Container for transforms
 		std::vector<geometry_msgs::TransformStamped> static_transforms;		///< Container for static transforms
 		std::vector<OBJHANDLE> objects;
+		std::unordered_map<OBJHANDLE, std::string> names;
+		
 		void publishTF2();
 		inline void publishStaticTF2();
 		ros::ServiceServer<std_srvs::Empty::Request, std_srvs::Empty::Response, ROSBridge> send_statc_tf_service;
 		void send_static_tf_cb(const std_srvs::Empty::Request&, std_srvs::Empty::Response&);
 };
-
-
 
 }

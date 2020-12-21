@@ -23,6 +23,7 @@
 #include "ROSBridge.h"
 #include "resource.h"
 #include <string>
+#include <functional>
 
 namespace ros_bridge {
 
@@ -193,45 +194,44 @@ void ROSBridge::clbkPostStep(double, double, double mjd) {
 		nh.spinOnce();
 }
 
-const char* getObjectName(const OBJHANDLE& hObj) {
-	static char obj_name[255];
-	oapiGetObjectName(hObj, obj_name, 255);
-	char* short_name = reinterpret_cast<char*>(calloc(strlen(obj_name)+1, sizeof(char)));
-	strcpy(short_name, obj_name);
-	return const_cast<const char*>(short_name);
+void removeNonUTF8Symbols(std::string& str) {
+	static const std::function<std::string::const_iterator(const std::string&)> findBadSymbol(
+		[](const std::string& str) {
+			return std::find_if(
+				str.cbegin(),
+				str.cend(),
+				[](const char& symbol) {
+					return (symbol < 0);
+				}
+			);
+		}
+	);
+	auto bad_symbol = findBadSymbol(str);
+	while (bad_symbol != str.cend()) {
+		str.erase(bad_symbol);
+		bad_symbol = findBadSymbol(str);
+	}
+}
+
+std::string& ROSBridge::getObjectName(const OBJHANDLE& hObj) {
+	auto name_it = names.find(hObj);
+	if (name_it == names.cend()) {
+		char obj_name[255];
+		oapiGetObjectName(hObj, obj_name, 255);
+		name_it = names.insert(
+			std::move(
+				std::make_pair(
+					hObj,
+					std::move(std::string(obj_name))
+				)
+			)
+		).first;
+		removeNonUTF8Symbols(name_it->second);
+	}
+	return name_it->second;
 }
 
 constexpr char* global_frame_id = "world";
-
-std::vector<std::string> corrected_strings;
-
-const char* removeNonUTF8Symbols(const char* str) {
-	bool bad_symbol = false;
-	for (uint8_t i = 0; i < strlen(str); ++i) {
-		if (str[i] < 0) {
-			bad_symbol = true;
-			break;
-		}
-	}
-	if (bad_symbol) {
-		corrected_strings.emplace_back(str);
-		std::string& corr_str = corrected_strings.back();
-		std::string::const_iterator it = corr_str.cbegin();
-		while (it != corr_str.cend()) {
-			if (*it < 0) {
-				corr_str.erase(it);
-				it = corr_str.cbegin();
-			}
-			else {
-				++it;
-			}
-		}
-		return corr_str.data();
-	}
-	else {
-		return str;
-	}
-}
 
 std::vector<std::shared_ptr<std::string>> pad_names;
 
@@ -255,7 +255,7 @@ void ROSBridge::clbkSimulationStart(RenderMode) {
 			const OBJHANDLE hObj = oapiGetObjectByIndex(i);
 			geometry_msgs::TransformStamped& obj_transform = *transform_it;
 			obj_transform.header = transform_header;
-			obj_transform.child_frame_id = removeNonUTF8Symbols(getObjectName(hObj));
+			obj_transform.child_frame_id = getObjectName(hObj).c_str();
 			GetGlobalTransform(hObj, obj_transform.transform);
 			++transform_it;
 			objects.push_back(hObj);
@@ -275,7 +275,7 @@ void ROSBridge::clbkSimulationStart(RenderMode) {
 				geometry_msgs::TransformStamped& base_transform = static_transforms.back();
 				base_transform.header.frame_id = obj_transform.child_frame_id;
 				base_transform.header.stamp = obj_transform.header.stamp;
-				base_transform.child_frame_id = removeNonUTF8Symbols(getObjectName(hBase));
+				base_transform.child_frame_id = getObjectName(hBase).c_str();
 				VECTOR3 Tbase;
 				MATRIX3 Rbase;
 				{
@@ -335,8 +335,6 @@ inline void ROSBridge::publishStaticTF2() {
 	tf2_msg.transforms_length = static_transforms.size();
 	static_tf2_pub.publish(&tf2_msg);
 }
-
-const char* send_static_tf_response = "hello world";
 
 void ROSBridge::send_static_tf_cb(const std_srvs::Empty::Request&, std_srvs::Empty::Response&) {
 	publishStaticTF2();
