@@ -49,6 +49,7 @@
 #include "std_srvs/Empty.h"
 #include <vector>
 #include <unordered_map>
+#include <boost/container_hash/hash.hpp>
 
 
 namespace ros_bridge {
@@ -85,6 +86,8 @@ class ROSBridge : public oapi::Module {
 		double getUTC(const double& mjd) const;
 
 		std::string& getObjectName(const OBJHANDLE& hObj);
+
+		std::string& getPadName(const OBJHANDLE& hBase, const uint32_t& pad);
 		
 		/**
 		 * \brief	NodeHandle for ROS
@@ -101,6 +104,7 @@ class ROSBridge : public oapi::Module {
 		std::vector<geometry_msgs::TransformStamped> static_transforms;		///< Container for static transforms
 		std::vector<OBJHANDLE> objects;
 		std::unordered_map<OBJHANDLE, std::string> names;
+		std::unordered_map<std::pair<OBJHANDLE, uint32_t>, std::string, boost::hash<std::pair<OBJHANDLE, uint32_t>>> pad_names;
 		
 		void publishTF2();
 		inline void publishStaticTF2();

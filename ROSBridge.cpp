@@ -231,9 +231,25 @@ std::string& ROSBridge::getObjectName(const OBJHANDLE& hObj) {
 	return name_it->second;
 }
 
-constexpr char* global_frame_id = "world";
+std::string& ROSBridge::getPadName(const OBJHANDLE& hBase, const uint32_t& pad) {
+	auto key = std::make_pair(hBase, pad);
+	auto name_it = pad_names.find(key);
+	if (name_it == pad_names.cend()) {
+		name_it = pad_names.insert(
+			std::move(
+				std::make_pair(
+					std::move(key),
+					std::move(
+						getObjectName(hBase) + "/Pad" + std::to_string(pad + 1)
+					)
+				)
+			)
+		).first;
+	}
+	return name_it->second;
+}
 
-std::vector<std::shared_ptr<std::string>> pad_names;
+constexpr char* global_frame_id = "world";
 
 void ROSBridge::clbkSimulationStart(RenderMode) {
 	nh.initNode(const_cast<char*>(rosmaster_ip.c_str()));
@@ -302,16 +318,7 @@ void ROSBridge::clbkSimulationStart(RenderMode) {
 					geometry_msgs::TransformStamped& pad_transform = static_transforms.back();
 					pad_transform.header.frame_id = base_transform.child_frame_id;
 					pad_transform.header.stamp = base_transform.header.stamp;
-					pad_names.emplace_back(
-						std::move(
-							std::make_shared<std::string>(
-								std::move(
-									std::string(base_transform.child_frame_id) + "/Pad" + std::to_string(k+1)
-								)
-							)
-						)
-					);
-					pad_transform.child_frame_id = pad_names.back()->c_str();
+					pad_transform.child_frame_id = getPadName(hBase, k).c_str();
 					convert(Tpad, pad_transform.transform.translation);
 					convert(Rpad, pad_transform.transform.rotation);
 				}
