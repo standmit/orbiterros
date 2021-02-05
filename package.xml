@@ -14,11 +14,17 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>qtbase5-dev</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>tf2_msgs</build_depend>
   <depend>roscpp</depend>
+  <depend>rviz</depend>
   <depend>tf2_ros</depend>
+  <exec_depend>libqt5-core</exec_depend>
+  <exec_depend>libqt5-widgets</exec_depend>
 
 
-  <export />
+  <export>
+    <rviz plugin="${prefix}/rviz_plugin.xml" />
+  </export>
 </package>

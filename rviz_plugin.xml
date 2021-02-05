@@ -1,0 +1,11 @@
+<library path="lib/liborbiterros_rviz_plugin">
+    <class
+        name="orbiterros/ScalePanel"
+        type="orbiterros::rviz_plugin::ScalePanel"
+        base_class_type="rviz::Panel"
+    >
+        <description>
+            Panel to set scale factor for the world
+        </description>
+    </class>
+</library>
