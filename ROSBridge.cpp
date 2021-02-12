@@ -90,39 +90,27 @@ void convert(const MATRIX3& m, geometry_msgs::Quaternion& q) {
 	normalize(q);
 }
 
-const MATRIX3 toECEF{
-	1.0,  0.0,  0.0,
-	0.0,  0.0,  1.0,
-	0.0, -1.0,  0.0
-};
+VECTOR3 toRightHand(const VECTOR3& v) {
+	return { v.x, v.z, v.y };
+}
 
-const MATRIX3 fromECEF{
-	1.0,  0.0,  0.0,
-	0.0,  0.0, -1.0,
-	0.0,  1.0,  0.0
-};
-
-const MATRIX3 toROSREP103{
-	0.0,  1.0,  0.0,
-	0.0,  0.0,  1.0,
-	1.0,  0.0,  0.0
-};
+MATRIX3 toRightHand(const MATRIX3& m) {
+	return {
+		m.m11, m.m13, m.m12,
+		m.m31, m.m33, m.m32,
+		m.m21, m.m23, m.m22
+	};
+}
 
 void GetGlobalTransform(const OBJHANDLE& hObj, geometry_msgs::Transform& transform) {
 	VECTOR3 position;
 	oapiGetGlobalPos(hObj, &position);
+	position = toRightHand(position);
 	convert(position, transform.translation);
 
 	MATRIX3 rotation;
 	oapiGetRotationMatrix(hObj, &rotation);
-	switch (oapiGetObjectType(hObj)) {
-		case OBJTP_STAR:
-		case OBJTP_PLANET:
-			rotation = mul(rotation, toECEF);
-			break;
-		default:
-			rotation = mul(rotation, toROSREP103);
-	}
+	rotation = toRightHand(rotation);
 	convert(rotation, transform.rotation);
 }
 
