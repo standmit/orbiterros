@@ -172,26 +172,22 @@ double ROSBridge::getUTC(const double& mjd) const {
 }
 
 void ROSBridge::clbkPostStep(double, double, double mjd) {
-	const double utc = getUTC(mjd);
-
-	clock_msg.clock.fromSec(utc);
+	clock_msg.clock.fromSec(getUTC(mjd));
 	clock_pub.publish(&clock_msg);
 
 	{
-		std::vector<geometry_msgs::TransformStamped>::iterator transform_it = transforms.begin();
-		std::vector<OBJHANDLE>::const_iterator obj_it = objects.cbegin();
-
-		while (obj_it != objects.cend()) {
-			transform_it->header.stamp.fromSec(getUTC(mjd));
-			GetGlobalTransform(*obj_it, transform_it->transform);
-			++obj_it;
+		const ros::Time& timestamp = clock_msg.clock;
+		auto transform_it = transforms.begin();
+		for (const OBJHANDLE& hObj: objects) {
+			transform_it->header.stamp = timestamp;
+			GetGlobalTransform(hObj, transform_it->transform);
 			++transform_it;
 		}
-
-		publishTF2();
 	}
 
-		nh.spinOnce();
+	publishTF2();
+
+	nh.spinOnce();
 }
 
 void removeNonUTF8Symbols(std::string& str) {
