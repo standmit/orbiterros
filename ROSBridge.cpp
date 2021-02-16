@@ -131,36 +131,35 @@ inline void Transpose(MATRIX3& matrix) {
 	std::swap(matrix.m23, matrix.m32);
 }
 
-void EquToENU(const double& lng, const double& lat, const double& rad, geometry_msgs::Transform& transform) {
+void EquToENU(const double& lng, const double& lat, const double& rad, VECTOR3& T, MATRIX3& R) {
 	const double sinlng = sin(lng);
 	const double coslng = cos(lng);
+	const double coslat = cos(-lat + PI05);
+	const double sinlat = sin(-lat + PI05);
 	
-	{
-		VECTOR3 T{
-			rad * coslng * cos(lat),
-			rad * sinlng * cos(lat),
-			rad * sin(lat)
-		};
-		convert(T, transform.translation);
-	}
+	T.x = rad * coslng * cos(lat);
+	T.y = rad * sinlng * cos(lat);
+	T.z = rad * sin(lat);
 
-	{
-		const double coslat = cos(-lat + PI05);
-		const double sinlat = sin(-lat + PI05);
-
-		const MATRIX3 R{
-			-1.0 * sinlng,  -1.0 * coslat * coslng,  sinlat * coslng,
-			coslng,         -1.0 * coslat * sinlng,  sinlat * sinlng,
-			0.0,            sinlat,                  coslat
-		};
-		convert(R, transform.rotation);
-	}
+	R.m11 = -1.0 * sinlng;
+	R.m12 = -1.0 * coslat * coslng;
+	R.m13 = sinlat * coslng;
+	R.m21 = coslng;
+	R.m22 = -1.0 * coslat * sinlng;
+	R.m23 = sinlat * sinlng;
+	R.m31 = 0.0;
+	R.m32 = sinlat;
+	R.m33 = coslat;
 }
 
-inline void GetSurfaceBaseTransform(const OBJHANDLE& hBase, geometry_msgs::Transform& transform) {
-	double lng, lat, rad;
-	oapiGetBaseEquPos(hBase, &lng, &lat, &rad);
-	EquToENU(lng, lat, rad, transform);
+void EquToENU(const double& lng, const double& lat, const double& rad, geometry_msgs::Transform& transform) {
+	VECTOR3 T;
+	MATRIX3 R;
+
+	EquToENU(lng, lat, rad, T, R);
+
+	convert(T, transform.translation);
+	convert(R, transform.rotation);
 }
 
 double ROSBridge::getUTC() const {
@@ -234,6 +233,8 @@ const char* removeNonUTF8Symbols(const char* str) {
 	}
 }
 
+std::vector<std::shared_ptr<std::string>> pad_names;
+
 void ROSBridge::clbkSimulationStart(RenderMode) {
 	nh.initNode(const_cast<char*>(rosmaster_ip.c_str()));
 	nh.advertise(clock_pub);
@@ -252,26 +253,68 @@ void ROSBridge::clbkSimulationStart(RenderMode) {
 		objects.reserve(obj_count);
 		for (uint32_t i = 0; i < obj_count; ++i) {
 			const OBJHANDLE hObj = oapiGetObjectByIndex(i);
-			geometry_msgs::TransformStamped& transform = *transform_it;
-			transform.header = transform_header;
-			transform.child_frame_id = removeNonUTF8Symbols(getObjectName(hObj));
-			GetGlobalTransform(hObj, transform.transform);
+			geometry_msgs::TransformStamped& obj_transform = *transform_it;
+			obj_transform.header = transform_header;
+			obj_transform.child_frame_id = removeNonUTF8Symbols(getObjectName(hObj));
+			GetGlobalTransform(hObj, obj_transform.transform);
 			++transform_it;
 			objects.push_back(hObj);
 
 			const uint32_t base_count = oapiGetBaseCount(hObj);
-			const std::vector<geometry_msgs::TransformStamped>::size_type current_size = static_transforms.size();
-			static_transforms.resize(static_transforms.size() + base_count);
-			std::vector<geometry_msgs::TransformStamped>::iterator static_transform_it = static_transforms.begin();
-			std::advance(static_transform_it, current_size);
+			{
+				uint32_t reserve_count = base_count;
+				for (uint32_t bi = 0; bi < base_count; ++bi) {
+					const OBJHANDLE hBase = oapiGetBaseByIndex(hObj, bi);
+					reserve_count += oapiGetBasePadCount(hBase);
+				}
+				static_transforms.reserve(static_transforms.size() + reserve_count);
+			}
 			for (uint32_t j = 0; j < base_count; ++j) {
 				const OBJHANDLE hBase = oapiGetBaseByIndex(hObj, j);
-				geometry_msgs::TransformStamped& static_transform = *static_transform_it;
-				static_transform.header.frame_id = transform.child_frame_id;
-				static_transform.header.stamp = transform.header.stamp;
-				static_transform.child_frame_id = removeNonUTF8Symbols(getObjectName(hBase));
-				GetSurfaceBaseTransform(hBase, static_transform.transform);
-				++static_transform_it;
+				static_transforms.emplace_back();
+				geometry_msgs::TransformStamped& base_transform = static_transforms.back();
+				base_transform.header.frame_id = obj_transform.child_frame_id;
+				base_transform.header.stamp = obj_transform.header.stamp;
+				base_transform.child_frame_id = removeNonUTF8Symbols(getObjectName(hBase));
+				VECTOR3 Tbase;
+				MATRIX3 Rbase;
+				{
+					double lng, lat, rad;
+					oapiGetBaseEquPos(hBase, &lng, &lat, &rad);
+					EquToENU(lng, lat, rad, Tbase, Rbase);
+					convert(Tbase, base_transform.transform.translation);
+					convert(Rbase, base_transform.transform.rotation);
+				}
+				MATRIX3 RbaseT = Rbase;
+				Transpose(RbaseT);
+				const uint32_t pad_count = oapiGetBasePadCount(hBase);
+				pad_names.reserve(pad_names.size() + pad_count);
+				for (uint32_t k = 0; k < pad_count; ++k) {
+					double lng, lat, rad;
+					oapiGetBasePadEquPos(hBase, k, &lng, &lat, &rad);
+					VECTOR3 Tpad;
+					MATRIX3 Rpad;
+					EquToENU(lng, lat, rad, Tpad, Rpad);
+					Tpad -= Tbase;
+					Tpad = mul(RbaseT, Tpad);
+					Rpad = mul(RbaseT, Rpad);
+					static_transforms.emplace_back();
+					geometry_msgs::TransformStamped& pad_transform = static_transforms.back();
+					pad_transform.header.frame_id = base_transform.child_frame_id;
+					pad_transform.header.stamp = base_transform.header.stamp;
+					pad_names.emplace_back(
+						std::move(
+							std::make_shared<std::string>(
+								std::move(
+									std::string(base_transform.child_frame_id) + "/Pad" + std::to_string(k+1)
+								)
+							)
+						)
+					);
+					pad_transform.child_frame_id = pad_names.back()->c_str();
+					convert(Tpad, pad_transform.transform.translation);
+					convert(Rpad, pad_transform.transform.rotation);
+				}
 			}
 		}
 	}

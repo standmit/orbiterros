@@ -85,11 +85,8 @@ class ROSBridge : public oapi::Module {
 
 		/**
 		 * \brief	NodeHandle for ROS
-		 * \details.
-		 * Input buffer size: Topics request (8 bytes) + Time message (16 bytes) + send_static_tf request (15 bytes) = 39 bytes.
-		 * Output buffer size: Topics count response (12 bytes) + Clock topic info (79 bytes) + TF topic info (75 bytes) + Static TF topic info (77 bytes) + Clock message (16 bytes) + Time message(16 bytes) + TF message(8589 bytes for all Solar system's objects, bases and 20 ships nemed by 15 chars names) + send_static_tf service info (88 bytes) + send_static_tf response (20 bytes) = 8897 bytes
 		 */
-		ros::NodeHandle_<WindowsSocket, 2, 4, 539, 9500> nh;
+		ros::NodeHandle_<WindowsSocket, 1, 4, 40, 11107> nh;
 
 		rosgraph_msgs::Clock clock_msg;		///< Clock message
 		ros::Publisher clock_pub;			///< Publisher for clock message
