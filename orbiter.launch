@@ -7,5 +7,7 @@
         <env name="ROSCONSOLE_CONFIG_FILE" value="$(find orbiterros)/debug.config" />
 
         <node name="static_transform_publisher" pkg="orbiterros" type="static_transform_publisher" respawn="true" output="screen"/>
+
+        <node name="rviz" pkg="rviz" type="rviz" required="true" args="-d $(find orbiterros)/debug.rviz" output="screen" />
     </group>
 </launch>

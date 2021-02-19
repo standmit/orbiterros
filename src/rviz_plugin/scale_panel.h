@@ -25,6 +25,7 @@
 
 
 #include <rviz/panel.h>
+#include <QValidator>
 
 
 class QLineEdit;
@@ -40,8 +41,9 @@ class ScalePanel : public rviz::Panel {
     public:
         ScalePanel(QWidget* parent = nullptr);
 
+        virtual void onInitialize() override;
         virtual void load(const rviz::Config& config);
-        virtual void save(rviz::Config config);
+        virtual void save(rviz::Config config) const override;
 
         static const char panel_name[];
 
@@ -54,6 +56,7 @@ class ScalePanel : public rviz::Panel {
     protected:
         QLineEdit* world_scale_editor_;
         float actual_scale_;
+        QDoubleValidator scale_validator_;
 
         static const QString world_scale_property_name;
 };
